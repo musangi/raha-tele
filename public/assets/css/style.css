@@ -1,9 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap');
 
-:root {
-    --primary: rgb(255, 187, 0);
-}
-
 * {
     font-family: "Oswald", sans-serif;
     font-optical-sizing: auto;
@@ -11,14 +7,78 @@
     font-style: normal;
 }
 
-/* Set up the container for the slideshow */
+:root {
+    --primary: rgb(255, 187, 0);
+}
+
+/* Text color */
+.main-color {
+    color: var(--primary);
+}
+
+/* Background color */
+.main-bg {
+    background-color: var(--primary);
+}
+
+a{
+    text-decoration: none;
+    color: var(--primary);
+}
+
+/* Button solid color */
+.btn-solid-main {
+    background-color: var(--primary); /* Set the background color */
+    color: white;                     /* Set the text color */
+    border: none;                    /* Remove border */
+    padding: 0.375rem 0.75rem;       /* Standard padding for buttons */
+    border-radius: 0.25rem;          /* Optional: Adjust border radius */
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+/* Hover effect for solid button */
+.btn-solid-main:hover {
+    background-color: darken(var(--primary), 10%); /* Darken the primary color on hover */
+}
+
+/* Button outline color */
+.btn-outline-main {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.btn-outline-main:hover {
+    background-color: var(--primary);
+    color: white;
+}
+
+/* Smooth scroll for anchor links */
+html {
+    scroll-behavior: smooth;
+}
+
+/* General styling for the header section */
 .header {
     position: relative;
-    /* height: 100vh; */
+    overflow: hidden;
+    height: 100vh;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Slide container overlay to add a dim background */
+.slides {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
 }
 
-/* Common styles for all slides */
 .slide {
     position: absolute;
     top: 0;
@@ -27,206 +87,178 @@
     height: 100%;
     background-size: cover;
     background-position: center;
-    animation: slideShow 20s infinite;
     opacity: 0;
-    transition: opacity 1.5s ease-in-out;
+    animation: slideAnimation 20s infinite; /* Maintain the same total duration for all slides */
+    transition: opacity 1s ease-in-out; /* Smooth opacity transition */
 }
 
-/* Adding a dark overlay layer for each slide */
+/* Set animation delay for each slide */
+.slide:nth-child(1) {
+    animation-delay: 0s;
+}
+.slide:nth-child(2) {
+    animation-delay: 5s;
+}
+.slide:nth-child(3) {
+    animation-delay: 10s;
+}
+.slide:nth-child(4) {
+    animation-delay: 15s;
+}
+
+/* Keyframes for slide transitions */
+@keyframes slideAnimation {
+    0%, 20% {
+        opacity: 1;
+        transform: scale(1.05) translateY(0); /* Zoom in slightly */
+    }
+    20%, 80% {
+        opacity: 1; /* Keep the opacity high during this section */
+        transform: scale(1); /* Reset the scale */
+    }
+    80%, 100% {
+        opacity: 0; /* Fade out */
+        transform: scale(1); /* Reset the scale */
+    }
+}
+
+/* Dark overlay to dim the background slides */
 .slide::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    /* Adjust opacity for desired darkness */
+    background-color: rgba(0, 0, 0, 0.4);
     z-index: 1;
-    /* Ensures the overlay stays on top of the background image */
 }
 
-/* Animation for fading in and out */
-@keyframes slideShow {
-    0% {
-        opacity: 0;
-    }
-
-    20% {
-        opacity: 1;
-    }
-
-    40% {
-        opacity: 0;
-    }
-
-    100% {
-        opacity: 0;
-    }
-}
-
-/* Ensure the navbar is always visible above the slides */
-.main-navbar,
-.slider-caption {
-    z-index: 1000;
-    font-size: larger;
-}
-
-.main-navbar a {
-    color: white;
-}
-
-.main-navbar a:hover {
-    color: var(--primary);
+/* Navbar positioned on top of slides */
+.navbar {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 10;
+    transition: background-color 0.3s ease;
 }
 
 .navbar.scrolled {
-    background-color: var(--primary);
-    /* Change background on scroll */
-    transition: background-color 0.3s ease;
-    /* Smooth transition */
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
-/* Navbar logo */
-.navbar-brand img {
-    max-width: 100px;
-    max-height: auto;
-}
-
-.radio-item {
-    transition: background-color 0.3s ease;
-    cursor: pointer;
-}
-
-.radio-item:hover {
-    background-color: #f0f8ff;
-}
-
-.radio-item input[type="radio"] {
-    margin-right: 10px;
-}
-
-.radio-item input[type="radio"]:checked+label {
-    font-weight: bold;
-    color: var(--primary);
-}
-
-.radio-item label {
-    display: flex;
-    align-items: center;
-}
-
-.home-card-1,
-.home-card-2 {
-    background-color: var(--primary);
-}
-
-.home-card-2 {
-    opacity: 0.6;
-}
-
-.footer {
-    background-color: var(--primary);
-}
-
-.footer a {
-    transition: color 0.3s;
-    text-decoration: none;
-}
-
-.footer a:hover {
-    color: #000000 !important;
-    /* Change to any color you like */
-    text-decoration: underline;
-}
-
-.escort-card {
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 20px;
-    text-align: center;
-    margin: 10px;
-    transition: transform 0.2s;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.escort-card:hover {
-    transform: scale(1.05);
-    border-color: var(--primary);
-}
-
-.profile-img {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    margin-bottom: 10px;
-}
-
-.btn-custom,
-.btn-outline-custom:hover {
-    background-color: var(--primary) !important;
-}
-
-.btn-outline-custom {
-    border: 1px solid var(--primary) !important;
-}
-
-.availability-section {
-    background-color: var(--primary);
-}
-
-.page-btn.active {
-    background-color: var(--primary);
-    color: white;
-}
-
-.heading-title {
-    color: var(--primary) !important;
-}
-
-.carousel-item {
-    text-align: center;
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.carousel-item img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 10px;
-}
-
-.carousel-item h3 {
-    margin-top: 15px;
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
-}
-
-.carousel-item p {
-    margin-top: 10px;
-    font-size: 16px;
-    color: #666;
-}
-
-.carousel-item a {
-    display: inline-block;
-    margin-top: 15px;
-    padding: 10px 20px;
-    background-color: #007bff;
+.main-navbar .nav-link,
+.main-navbar .btn {
     color: #fff;
-    border-radius: 5px;
-    text-decoration: none;
 }
 
-.carousel-item a:hover {
-    background-color: #0056b3;
+.navbar-brand img {
+    height: 50px;
 }
 
-.img-border {
-    max-width: 100%;
-    max-height: auto;
-    border: 5px solid var(--primary);
+/* Welcome content styling */
+.header-content {
+    position: relative;
+    z-index: 2;
+    animation: fadeIn 3s ease-out;
+}
+
+.header-content h1,
+.header-content h3,
+.header-content p {
+    color: #ffffff;
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    animation: textFadeIn 3s ease-out 1s forwards;
+}
+
+/* Smooth fade-in effect for welcome content */
+@keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes textFadeIn {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+
+.story-card {
+    overflow: hidden;
+}
+
+.story-image-container {
+    overflow: hidden;
+    width: 100%;
+    height: 200px;
+    /* Set a fixed height for the image container */
+}
+
+.story-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.story-image-container:hover .story-image {
+    transform: scale(1.1);
+    /* Zoom in on hover */
+}
+
+.escort-card h5,
+.escort-card p {
+    white-space: nowrap;       /* Prevent line breaks */
+    overflow: hidden;          /* Hide overflowed text */
+    text-overflow: ellipsis;   /* Add ellipsis (...) for overflowed text */
+    width: 100%;               /* Ensure it takes the full width of the parent */
+}
+
+
+
+
+/* Heart and Orbit Animation */
+.heart-orbit {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 20px auto;
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Red_heart_icon.svg/1200px-Red_heart_icon.svg.png');
+    background-size: cover;
+    animation: orbit 10s linear infinite;
+}
+
+/* Plan Cards */
+.plan-card {
+    background-color: #2b2b4a;
+    color: #ffffff;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 10px;
+}
+
+.plan-card.popular {
+    background-color: #2ed9e7;
+    color: #000;
+}
+
+/* Premium Button */
+.premium-btn {
+    margin-top: 20px;
+    padding: 15px 25px;
+    font-size: 1.2em;
+    color: #000;
+    background-color: #ffffff;
+    border-radius: 30px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Neon Text */
+.neon-text {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 5px #fff, 0 0 10px #e60073, 0 0 20px #ff4da6, 0 0 40px #ff4da6, 0 0 60px #ff4da6;
 }
