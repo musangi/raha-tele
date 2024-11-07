@@ -4,14 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class PageController extends Controller
+class SubscriptionController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        return view('pages.subscribe');
     }
 
     /**
@@ -27,7 +27,22 @@ class PageController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Retrieve the subscription details from the request
+        $id = $request->input('plan_id');
+        $price = $request->input('plan_price');
+        $duration = $request->input('plan_duration');
+
+        // Add the subscription details to the session (acting as a cart)
+        session([
+            'subscription' => [
+                'id' => $id,
+                'price' => $price,
+                'duration' => $duration
+            ]
+        ]);
+
+        // Redirect to the registration page
+        return redirect()->route('register')->with('message', 'Subscription added to cart. Please create an account.');
     }
 
     /**
