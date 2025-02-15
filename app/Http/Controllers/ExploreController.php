@@ -11,7 +11,8 @@ class ExploreController extends Controller
      */
     public function index()
     {
-        //
+        // return profile.explorer.index
+        return view('portal.explore.index');
     }
 
     /**
