@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ExploreController extends Controller
@@ -11,6 +12,15 @@ class ExploreController extends Controller
      */
     public function index()
     {
+        $user = auth()->user();
+        // Fetch users NOT interacted with yet (not liked/disliked)
+        $potentialMatches = User::where('id', '!=', $user->id )//exclude self 
+        ->whereNotIn('id', function($query) use ($user) {
+            $query->select('matched_user_id')->from('matches')->where('usser_id', $user->id);
+        })
+        ->inRandomOrder()
+        ->limit(10) //limit to 10 users at a time
+        ->get();
         // return profile.explorer.index
         return view('portal.explore.index');
     }
