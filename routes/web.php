@@ -52,4 +52,7 @@ Route::group(['prefix' => 'portal', 'middleware' => ['auth']], function () {
     Route::post('/messages/send', [MessageController::class, 'send'])->name('messages.send');
     // Explore Routes
     Route::get('/explore', [ExploreController::class, 'index'])->name('explore');
+    Route::post('/match/like/{id}', [MatchController::class, 'like'])->name('match.like');
+    Route::post('/match/dislike/{id}', [MatchController::class, 'dislike'])->name('match.dislike');
+    
 });

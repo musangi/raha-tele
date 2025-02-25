@@ -3,10 +3,10 @@
 @section('content')
 <div class="container">
     <div class="row">
-        @foreach($matches as $match)
+        @foreach($potentialMatches as $match)
             <div class="col-md-3 mb-4">
                 <div class="card">
-                    <img src="{{ $match->image }}" class="card-img-top" alt="{{ $match->name }}">
+                    <img src="{{ $match->image }}" class="card-img-top">
                     <div class="card-body text-center">
                         <h5 class="card-title">{{ $match->name }}</h5>
                         <p class="card-text">{{ $match->bio }}</p>

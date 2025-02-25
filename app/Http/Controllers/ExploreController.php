@@ -4,25 +4,31 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ExploreController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Show the explore page with potential matches.
      */
     public function index()
     {
-        $user = auth()->user();
+        $user = Auth::user(); // Get the logged-in user
+        if(!$user){
+            return redirect()->route('login')->with('error', 'You must be logged in.');
+        }
+
         // Fetch users NOT interacted with yet (not liked/disliked)
         $potentialMatches = User::where('id', '!=', $user->id )//exclude self 
         ->whereNotIn('id', function($query) use ($user) {
-            $query->select('matched_user_id')->from('matches')->where('usser_id', $user->id);
+            $query->select('matched_user_id')->from('matches')->where('user_id', $user->id);
         })
         ->inRandomOrder()
         ->limit(10) //limit to 10 users at a time
         ->get();
         // return profile.explorer.index
-        return view('portal.explore.index');
+        return view('portal.explore.index', compact('potentialMatches'));
+        // return view('profile.explorer.index', compact('matches'));
     }
 
     /**

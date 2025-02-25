@@ -3,23 +3,40 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\models\Matches;
 
 class MatchController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         //
     }
+    /**
+     * Display a listing of the likes.
+     */
+    public function like($id)
+    {
+        $user = auth()->user();
+        // store in the db
+        Matches::updateOrCreate(
+            ['user_id'=> $user->id, 'matched_user_id' => $id],
+            ['liked' => true]
+        );
+        return back(); //refresh page
+    }
 
     /**
-     * Show the form for creating a new resource.
+     * Show dislikes.
      */
-    public function create()
+    public function dislike($id)
     {
-        //
+        $user = auth()->user();
+        //store dislike in DB
+        Matches::updateOrCreate(
+            ['user_id' => $user->id, 'matched_user_id' => $id],
+            ['liked'=> false]
+        );
+        return back(); //refresh page
     }
 
     /**
