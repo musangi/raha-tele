@@ -32,7 +32,7 @@
             <div class="mb-2 fixed-top bg-light" style="z-index: 1000;">
                 <div class="container d-flex justify-content-between align-items-center py-2">
                     <a href="/" class="back-button d-inline-flex align-items-center text-decoration-none text-dark">
-                        <i class="fas fa-arrow-left me-2"></i> Website
+                        <i class="fas fa-arrow-left me-2"></i> Home
                     </a>
                     <span>
                         <img src="{{ asset('assets/images/logo-no-bg.png') }}" alt="Company Logo"

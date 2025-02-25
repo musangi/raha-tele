@@ -63,11 +63,11 @@
                         @foreach($suggestedProfiles as $profile)
                         <div class="col-4 text-center mb-3">
                             <a href="{{ route('profile.show', $profile->id) }}">
-                                {{-- <img src="{{ $profile->profile_image ?? asset('assets/images/profiles/default-avatar.png') }}"
-                                    class="rounded-circle" width="60" alt="User Image"> --}}
+                                <img src="{{ $profile->profile_image ?? asset('assets/images/profiles/default-avatar.png') }}"
+                                    class="rounded-circle" width="60" alt="User Image">
                                     
-                                    <img src="{{ $profile->profile_image ? asset('storage/' . Auth::user()->profile_image) : asset('assets/images/profiles/default-avatar.png') }}"
-                    class="rounded-circle" width="100" alt="User Image">
+                                    {{-- <img src="{{ $profile->profile_image ? asset('storage/' . Auth::user()->profile_image) : asset('assets/images/profiles/default-avatar.png') }}"
+                    class="rounded-circle" width="100" alt="User Image"> --}}
                                 <p class="small mt-2 mb-0 text-truncate"
                                     style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                     {{ $profile->name }}
