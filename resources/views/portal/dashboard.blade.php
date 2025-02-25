@@ -16,8 +16,9 @@
         <div class="col-md-4 mb-4">
             <div class="card shadow border-0 h-100">
                 <div class="card-body text-center">
-                    <img src="{{ $user->profile_image ?? asset('assets/images/profiles/default-avatar.png') }}"
-                        class="rounded-circle mb-3" width="100" alt="Profile Image">
+                    <img src="{{ Auth::user()->profile_image ? asset('storage/' . Auth::user()->profile_image) : asset('assets/images/profiles/default-avatar.png') }}"
+                    class="rounded-circle mb-3" width="100" alt="Profile Image">
+                        
                     <h5 class="card-title">{{ $user->name }}</h5>
                     <p class="text-muted">{{ $user->bio ?? 'Add a short bio to introduce yourself!' }}</p>
                     <a href="{{ route('profile.edit') }}" class="btn btn-outline-main btn-sm">Edit
@@ -62,8 +63,11 @@
                         @foreach($suggestedProfiles as $profile)
                         <div class="col-4 text-center mb-3">
                             <a href="{{ route('profile.show', $profile->id) }}">
-                                <img src="{{ $profile->profile_image ?? asset('assets/images/profiles/default-avatar.png') }}"
-                                    class="rounded-circle" width="60" alt="User Image">
+                                {{-- <img src="{{ $profile->profile_image ?? asset('assets/images/profiles/default-avatar.png') }}"
+                                    class="rounded-circle" width="60" alt="User Image"> --}}
+                                    
+                                    <img src="{{ $profile->profile_image ? asset('storage/' . Auth::user()->profile_image) : asset('assets/images/profiles/default-avatar.png') }}"
+                    class="rounded-circle" width="100" alt="User Image">
                                 <p class="small mt-2 mb-0 text-truncate"
                                     style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                     {{ $profile->name }}
