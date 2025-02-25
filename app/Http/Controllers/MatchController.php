@@ -4,12 +4,27 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\models\Matches;
+use Illuminate\Support\Facades\Auth;
 
 class MatchController extends Controller
 {
     public function index()
     {
-        //
+        $user = Auth::user();
+
+        // fetch liked matches
+        $likedMatches = Matches::where('user_id', $user->id)
+        ->where('liked', true)
+        ->with('matchedUser') // Assuming relationship
+        ->get();
+
+        // fetch disliked matches
+        $dislikedMatches = Matches::where('user_id', $user->id)
+        ->where('liked', false)
+        ->with('matchedUser')
+        ->get();
+
+        return view('portal.matches.index', compact('likedMatches', 'dislikedMatches'));
     }
     /**
      * Display a listing of the likes.
@@ -20,9 +35,9 @@ class MatchController extends Controller
         // store in the db
         Matches::updateOrCreate(
             ['user_id'=> $user->id, 'matched_user_id' => $id],
-            ['liked' => true]
+            ['liked' => true] //save liked
         );
-        return back(); //refresh page
+        return back()->with('success', 'You Liked this match!'); //refresh page
     }
 
     /**
@@ -34,9 +49,9 @@ class MatchController extends Controller
         //store dislike in DB
         Matches::updateOrCreate(
             ['user_id' => $user->id, 'matched_user_id' => $id],
-            ['liked'=> false]
+            ['liked'=> false] // save disliked
         );
-        return back(); //refresh page
+        return back()->with('success', 'you disliked this match'); //refresh page
     }
 
     /**

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('matches', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); //The user who liked/disliked
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); //The user who is to be liked/disliked
             $table->foreignId('matched_user_id')->constrained('users')->onDelete('cascade'); //The user being liked/disliked
             $table->boolean('liked')->default(false); // true for like, false for dislike
             $table->timestamps();
