@@ -12,6 +12,11 @@
 
 <div class="container mt-4">
     <h2 class="text-center main-color mb-4">💘 Potential Matches for You!</h2>
+    @if($potentialMatches->isEmpty())
+    <div class="alert alert-info text-center" role="alert">
+        😔 No matches found at the moment. Check back later!
+    </div>
+@endif
 
     <div class="row justify-content-center">
         @foreach($potentialMatches as $match)
