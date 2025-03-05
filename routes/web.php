@@ -48,9 +48,14 @@ Route::group(['prefix' => 'portal', 'middleware' => ['auth']], function () {
     Route::get('/matches', [MatchController::class, 'index'])->name('matches');
     // Message Routes
     Route::get('/messages', [MessageController::class, 'index'])->name('messages');
-    Route::get('/messages/{user}', [MessageController::class, 'index'])->name('messages.show');
-    Route::post('/messages/store', [MessageController::class, 'store'])->name('messages.store');
+    Route::get('/messages/{userId}', [MessageController::class, 'index'])->name('messages.index');
+    Route::post('/messages/{userId}', [MessageController::class, 'store'])->name('messages.store');
     
+    //new messages routes
+    // Route::middleware(['auth'])->group(function () {
+    //     Route::get('/messages/{userId}', [MessageController::class, 'index'])->name('messages.show');
+    //     Route::post('/messages/{userId}', [MessageController::class, 'store'])->name('messages.store');
+    // });
 
     // Explore Routes
     Route::get('/explore', [ExploreController::class, 'index'])->name('explore');
