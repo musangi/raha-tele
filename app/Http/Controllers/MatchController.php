@@ -37,7 +37,7 @@ class MatchController extends Controller
             ['user_id'=> $user->id, 'matched_user_id' => $id],
             ['liked' => true] //save liked
         );
-        return back()->with('success', 'You Liked this match!'); //refresh page
+        return back()->with('success', 'You Liked this match' ); //refresh page
     }
 
     /**
