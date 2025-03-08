@@ -5,16 +5,16 @@
     <div class="row">
         <!-- Matches Sidebar -->
         <div class="col-md-4 bg-white shadow-sm border-right p-3" style="height: 85vh; overflow-y: auto;">
-            <h4 class="mb-3 text-primary font-weight-bold">💬 Your Matches</h4>
+            <h4 class="main-color mb-4">💬 Your Matches</h4>
 
             <ul>
                 @foreach($matches as $match)
                     <li class="mb-2">
                         <a href="{{ route('messages.show', $match->id) }}" 
                            class="flex items-center p-2 rounded-lg hover:bg-gray-200">
-                            <img src="{{ $match->profile_picture }}" class="w-10 h-10 rounded-full mr-3" alt="{{ $match->name }}">
+                            <img src="{{ $match->profile_picture }}" class="w-10 h-10 rounded-full mr-3" alt="">
                             <div>
-                                <p class="font-medium">{{ $match->name }}</p>
+                                <p class="font-medium" style="color: black">{{ $match->name }}</p>
                                 @if($match->last_message)
                                     <p class="text-sm text-gray-500">{{ Str::limit($match->last_message->message, 20) }}</p>
                                 @else
