@@ -4,29 +4,29 @@
 <div class="container-fluid mt-4">
     <div class="row">
         <!-- Matches Sidebar -->
-        <div class="col-md-4 bg-white shadow-sm border-right p-3" style="height: 85vh; overflow-y: auto;">
-            <h4 class="main-color mb-4">💬 Your Matches</h4>
+       <!-- Matches Sidebar -->
+<div class="col-md-4 bg-white shadow-sm border-right p-3" style="height: 85vh; overflow-y: auto;">
+    <h4 class="main-color mb-4">💬 Your Matches</h4>
 
-            <ul>
-                @foreach($matches as $match)
-                    <li class="mb-2">
-                        <a href="{{ route('messages.show', $match->id) }}" 
-                           class="flex items-center p-2 rounded-lg hover:bg-gray-200">
-                            <img src="{{ $match->profile_picture }}" class="w-10 h-10 rounded-full mr-3" alt="">
-                            <div>
-                                <p class="font-medium" style="color: black">{{ $match->name }}</p>
-                                @if($match->last_message)
-                                    <p class="text-sm text-gray-500">{{ Str::limit($match->last_message->message, 20) }}</p>
-                                @else
-                                    <p class="text-sm text-gray-400">No messages yet</p>
-                                @endif
-                            </div>
-                        </a>
-                    </li>
-                @endforeach
-            </ul>
-            
-        </div>
+    <!-- Matches List (Vertical, Like a Messaging App) -->
+    <div class="list-group">
+        @foreach($matches as $match)
+            <a href="{{ route('messages.show', $match->id) }}" 
+               class="d-flex align-items-center p-2 list-group-item list-group-item-action border-0">
+                <img src="{{ $match->profile_picture }}" class="rounded-circle mr-3" 
+                     style="width: 50px; height: 50px; object-fit: cover;">
+                <div class="flex-grow-1">
+                    <p class="mb-1 font-weight-bold text-dark">{{ $match->name }}</p>
+                    @if($match->last_message)
+                        <p class="text-muted small mb-0">{{ Str::limit($match->last_message->message, 20) }}</p>
+                    @else
+                        <p class="text-muted small mb-0">No messages yet</p>
+                    @endif
+                </div>
+            </a>
+        @endforeach
+    </div>
+</div>
 
         <!-- Chat Section -->
         <div class="col-md-8 d-flex flex-column bg-light" style="height: 85vh;">
