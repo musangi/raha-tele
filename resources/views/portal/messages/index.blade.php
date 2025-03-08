@@ -13,8 +13,9 @@
         @foreach($matches as $match)
             <a href="{{ route('messages.show', $match->id) }}" 
                class="d-flex align-items-center p-2 list-group-item list-group-item-action border-0">
-                <img src="{{ $match->profile_picture }}" class="rounded-circle mr-3" 
+                <img src="{{ $match->profile_picture ? asset('storage/' . $match->profile_picture) : asset('assets/images/profiles/default-avatar.png') }}" class="rounded-circle mr-3" 
                      style="width: 50px; height: 50px; object-fit: cover;">
+                     
                 <div class="flex-grow-1">
                     <p class="mb-1 font-weight-bold text-dark">{{ $match->name }}</p>
                     @if($match->last_message)
@@ -51,12 +52,15 @@
                 </div>
 
                 <!-- Message Input -->
+                
                 <form action="{{ route('portal.messages.store', ['userId' => $selectedUser->id ?? '']) }}" 
-                    method="POST" class="p-4 bg-white border-t flex">
-                  @csrf
-                  <input type="text" name="message" class="flex-1 p-2 border rounded-lg" placeholder="Type a message..." required>
-                  <button class="ml-2 bg-blue-500 text-white px-4 py-2 rounded-lg">Send</button>
-              </form>
+                    method="POST" class="p-3 bg-white border-top d-flex">
+                @csrf
+                <input type="text" name="message" 
+                        class="form-control flex-grow-1 p-3 rounded-pill border" 
+                        placeholder="Type a message..." required>
+                <button class="btn btn-primary ml-2 px-4 py-2 rounded-pill">Send</button>
+             </form>
             @else
                 <div class="d-flex align-items-center justify-content-center flex-grow-1">
                     <p class="text-muted">Select a match to start chatting.</p>
