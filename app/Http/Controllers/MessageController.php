@@ -23,7 +23,7 @@ class MessageController extends Controller
         ->orderBy('created_at', 'asc')
         ->get();
 
-        return view('portal.messages.chat', compact('messages' ,'userId'));
+        return view('portal.messages.index', compact('messages' ,'userId'));
     }
 
     /**
@@ -48,6 +48,8 @@ class MessageController extends Controller
         ]);
 
         return redirect()->route('portal.messages.show', ['userId' => $userId])->with('success', 'Message sent successfully!');
+        // return redirect()->route('messages.index', ['userId' => $userId])->with('success', 'Message sent successfully!');
+
         
     }
 

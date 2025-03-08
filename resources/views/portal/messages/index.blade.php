@@ -16,7 +16,7 @@
         @endforeach
     </div>
 
-    <form action="{{ route('messages.store', $userId) }}" method="POST" class="mt-3">
+    <form action="{{ route('messages.store', ['userId' => $userId]) }}" method="POST" class="mt-3">
         @csrf
         <div class="input-group">
             <input type="text" name="message" class="form-control" placeholder="Type a message..." required>
