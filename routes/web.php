@@ -50,6 +50,8 @@ Route::group(['prefix' => 'portal', 'middleware' => ['auth']], function () {
     Route::get('/messages', [MessageController::class, 'index'])->name('messages');
     Route::get('/messages/{userId}', [MessageController::class, 'index'])->name('messages.index');
     Route::post('/messages/{userId}', [MessageController::class, 'store'])->name('messages.store');
+    Route::post('/messages/{userId}', [MessageController::class, 'show'])->name('messages.show');
+
     
     //new messages routes
     // Route::middleware(['auth'])->group(function () {
