@@ -5,15 +5,35 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Message;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class MessageController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index($userId)
+    public function index($userId = null)
     {
         $user = Auth::user();
+
+        // Fetch all users the current user has matched with (sent or received a message)
+        $matches = User::whereIn('id', function ($query) use ($user) {
+            $query->select('receiver_id')
+                ->from('messages')
+                ->where('sender_id', $user->id)
+                ->union(
+                    (clone $query)->select('sender_id')
+                        ->from('messages')
+                        ->where('receiver_id', $user->id)
+                );
+        })->get();
+
+        // If no user is selected, just show the matches list
+        if (!$userId) {
+            return view('portal.messages.index', compact('matches'));
+        }
+
+        // Fetch conversation with the selected user
         $messages = Message::where(function ($query) use ($user, $userId) {
             $query->where('sender_id', $user->id)->where('receiver_id', $userId);
         })
@@ -23,65 +43,59 @@ class MessageController extends Controller
         ->orderBy('created_at', 'asc')
         ->get();
 
-        return view('portal.messages.index', compact('messages' ,'userId'));
+        $selectedUser = User::find($userId);
+
+        return view('portal.messages.index', compact('matches', 'messages', 'selectedUser', 'userId'));
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * Store a newly created message.
      */
     public function store(Request $request, $userId)
     {
-        $request->validate(['message'=> 'required|string']);
-
-        Message::create([
-            'sender_id'=>Auth::id(),
-            'receiver_id'=> $userId,
-            'message'=>$request->message,
+        $request->validate([
+            'message' => 'required|string|max:1000',
         ]);
 
-        return redirect()->route('portal.messages.show', ['userId' => $userId])->with('success', 'Message sent successfully!');
-        // return redirect()->route('messages.index', ['userId' => $userId])->with('success', 'Message sent successfully!');
+        $message = new Message();
+        $message->sender_id = Auth::id();
+        $message->receiver_id = $userId;
+        $message->message = $request->message;
+        $message->save();
 
-        
+        return redirect()->route('messages.show', ['userId' => $userId]); // Ensure route is correct
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified conversation.
      */
-    public function show(string $id)
+    public function show($userId)
     {
-        //
-    }
+        $user = Auth::user();
+        $selectedUser = User::findOrFail($userId);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+        // Fetch all users the current user has matched with
+        $matches = User::whereIn('id', function ($query) use ($user) {
+            $query->select('receiver_id')
+                ->from('messages')
+                ->where('sender_id', $user->id)
+                ->union(
+                    (clone $query)->select('sender_id')
+                        ->from('messages')
+                        ->where('receiver_id', $user->id)
+                );
+        })->get();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+        // Fetch conversation messages
+        $messages = Message::where(function ($query) use ($user, $userId) {
+            $query->where('sender_id', $user->id)->where('receiver_id', $userId);
+        })
+        ->orWhere(function ($query) use ($user, $userId) {
+            $query->where('sender_id', $userId)->where('receiver_id', $user->id);
+        })
+        ->orderBy('created_at', 'asc')
+        ->get();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return view('portal.messages.index', compact('matches', 'messages', 'selectedUser', 'userId'));
     }
 }
