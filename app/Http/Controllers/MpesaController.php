@@ -27,7 +27,7 @@ class MpesaController extends Controller
 
     public function stkPush(Request $request)
     {
-        dd($request->all());
+        // dd($request->all());
         $phone = $request->phone;
         $amount = $request->amount;
         $planId = $request->plan_id;
@@ -81,52 +81,59 @@ class MpesaController extends Controller
 
     private function getAccessToken()
     {
-        $response = Http::withBasicAuth($this->consumerKey, $this->consumerSecret)
-            ->get('https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials');
+        dd(env('MPESA_CONSUMER_KEY'), env('MPESA_CONSUMER_SECRET'));
 
+        $response = Http::withBasicAuth($this->consumerKey, $this->consumerSecret)
+            ->withOptions(["verify" => false]) // Disable SSL verification (if needed)
+            ->get('https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials');
+    
         if ($response->successful()) {
             return $response->json()['access_token'];
+        } else {
+            \Log::error("M-Pesa Authentication Failed: " . $response->body());
+            return null;
         }
-
-        return null;
+        
     }
+    
+
 
     public function mpesaCallback(Request $request)
-{
-    $response = $request->all();
+    {
+        $response = $request->all();
 
-    if (isset($response['Body']['stkCallback']['ResultCode']) && $response['Body']['stkCallback']['ResultCode'] == 0) {
-        $callbackMetadata = $response['Body']['stkCallback']['CallbackMetadata']['Item'];
+        if (isset($response['Body']['stkCallback']['ResultCode']) && $response['Body']['stkCallback']['ResultCode'] == 0) {
+            $callbackMetadata = $response['Body']['stkCallback']['CallbackMetadata']['Item'];
 
-        $mpesaReceipt = collect($callbackMetadata)->where('Name', 'MpesaReceiptNumber')->first()['Value'];
-        $amount = collect($callbackMetadata)->where('Name', 'Amount')->first()['Value'];
-        $phone = collect($callbackMetadata)->where('Name', 'PhoneNumber')->first()['Value'];
+            // Extract transaction details
+            $mpesaReceipt = collect($callbackMetadata)->where('Name', 'MpesaReceiptNumber')->first()['Value'];
+            $amount = collect($callbackMetadata)->where('Name', 'Amount')->first()['Value'];
+            $phone = collect($callbackMetadata)->where('Name', 'PhoneNumber')->first()['Value'];
 
-        // Find user by phone number
-        $user = \App\Models\User::where('phone', $phone)->first();
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
+            // Find user by phone number
+            $user = \App\Models\User::where('phone', $phone)->first();
+            if (!$user) {
+                return response()->json(['error' => 'User not found'], 404);
+            }
+
+            // Find the corresponding plan
+            $plan = \App\Models\SubscriptionPlan::where('amount', $amount)->first();
+            if (!$plan) {
+                return response()->json(['error' => 'Subscription plan not found'], 404);
+            }
+
+            // Create subscription record
+            Subscription::create([
+                'user_id' => $user->id,
+                'subscription_plan_id' => $plan->id,
+                'start_date' => now(),
+                'end_date' => Carbon::now()->addDays(30),
+                'amount' => $amount,
+            ]);
+
+            return response()->json(['success' => 'Subscription activated successfully']);
         }
 
-        // Find corresponding plan (ensure it exists)
-        $plan = \App\Models\SubscriptionPlan::where('amount', $amount)->first();
-        if (!$plan) {
-            return response()->json(['error' => 'Subscription plan not found'], 404);
-        }
-
-        // Store subscription in the database
-        Subscription::create([
-            'user_id' => $user->id,
-            'subscription_plan_id' => $plan->id,
-            'start_date' => now(),
-            'end_date' => Carbon::now()->addDays(30), // Adjust for different plans if needed
-            'amount' => $amount,
-        ]);
-
-        return response()->json(['success' => 'Subscription activated successfully']);
+        return response()->json(['error' => 'Payment failed'], 400);
     }
-
-    return response()->json(['error' => 'Payment failed'], 400);
-}
-
 }
