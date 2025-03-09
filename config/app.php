@@ -130,11 +130,21 @@ return [
         App\Providers\AuthServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        \Safaricom\Mpesa\MpesaServiceProvider::class
 
         /*
-         * Custom Service Providers...
+         * Custom Providers  ...
          */
-        // Add your custom service providers here
+        // Add your Custom Providerss here
+
+
     ],
+    /*
+         * CLass Aliases ...
+         */
+        // Add your Class Aliases here
+        'aliases' => Facade::defaultAliases()->merge([
+            'Mpesa'=> \Safaricom\Mpesa\MpesaServiceProvider::class
+            ])->toArray(),
 
 ];
