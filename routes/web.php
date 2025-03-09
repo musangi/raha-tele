@@ -7,6 +7,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\MpesaController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -57,5 +58,8 @@ Route::group(['prefix' => 'portal', 'middleware' => ['auth']], function () {
     Route::get('/explore', [ExploreController::class, 'index'])->name('explore');
     Route::post('/match/like/{id}', [MatchController::class, 'like'])->name('match.like');
     Route::post('/match/dislike/{id}', [MatchController::class, 'dislike'])->name('match.dislike');
+
+    // mpesa
+    Route::post('/mpesa/stkpush', [MpesaController::class, 'stkPush'])->name('mpesa.stkpush');Route::post('/mpesa/callback', [MpesaController::class, 'mpesaCallback'])->name('mpesa.callback');
     
 });

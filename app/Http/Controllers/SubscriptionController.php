@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SubscriptionPlan;
 use Illuminate\Http\Request;
 
 class SubscriptionController extends Controller
@@ -76,4 +77,11 @@ class SubscriptionController extends Controller
     {
         //
     }
+
+    public function showSubscriptionPage()
+    {
+        $subscriptionPlans = SubscriptionPlan::all(); // Fetch all plans from the DB
+        return view('subscription', compact('subscriptionPlans'));
+    }
+
 }
