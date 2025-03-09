@@ -11,9 +11,11 @@
         "bootstrap": "^5.2.3",
         "laravel-vite-plugin": "^1.0",
         "sass": "^1.56.1",
-        "vite": "^5.0"
+        "vite": "^6.2.1"
     },
     "dependencies": {
-        "owl.carousel": "^2.3.4"
+        "laravel-echo": "^2.0.2",
+        "owl.carousel": "^2.3.4",
+        "pusher-js": "^8.4.0"
     }
 }

@@ -4,8 +4,7 @@
 <div class="container-fluid mt-4">
     <div class="row">
         <!-- Matches Sidebar -->
-       <!-- Matches Sidebar -->
-<div class="col-md-4 bg-white shadow-sm border-right p-3" style="height: 85vh; overflow-y: auto;">
+    <div class="col-md-4 bg-white shadow-sm border-right p-3" style="height: 85vh; overflow-y: auto;">
     <h4 class="main-color mb-4">💬 Your Matches</h4>
 
     <!-- Matches List (Vertical, Like a Messaging App) -->
