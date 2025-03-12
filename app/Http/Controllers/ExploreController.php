@@ -28,7 +28,7 @@ class ExploreController extends Controller
         ->get();
         // return profile.explorer.index
         return view('portal.explore.index', compact('potentialMatches'));
-        // return view('profile.explorer.index', compact('matches'));
+        
     }
 
     /**
