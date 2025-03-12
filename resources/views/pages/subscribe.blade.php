@@ -34,7 +34,7 @@
 </div>
 
 <!-- Subscription Form -->
-<form action="{{ route('mpesa.stkpush') }}" method="POST" id="subscription-form">
+<form action="{{ route('pay') }}" method="POST" id="subscription-form">
     @csrf
 
     <!-- Hidden fields to store selected plan details -->
@@ -47,6 +47,7 @@
     <button type="button" class="premium-btn btn mt-4 w-100 py-2" id="open-modal-btn">
         Become a Premium user<br><small class="selected-plan-price">Ksh 600.00 / month</small>
     </button>
+    
 </form>
 
 <!-- Subscription Info -->

@@ -214,4 +214,9 @@ return [
 
     'partitioned' => env('SESSION_PARTITIONED_COOKIE', false),
 
+    'driver' => env('SESSION_DRIVER', 'file'),  // Ensure session is stored properly
+    'lifetime' => 120,  // Session lasts for 120 minutes
+    'expire_on_close' => false,
+
+
 ];

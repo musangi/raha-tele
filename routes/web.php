@@ -29,6 +29,10 @@ Route::any('/compliance', [PageController::class, 'compliance'])->name('policies
 Route::any('/accessibility', [PageController::class, 'accessibility'])->name('policies.accessibility');
 Route::any('/subscribe', [SubscriptionController::class, 'index'])->name('subscribe.index');
 Route::any('/subscribe/store', [SubscriptionController::class, 'store'])->name('subscribe.store');
+// Route::post('/pay', [MpesaController::class, 'stk'])->name('pay');
+Route::post('/pay', [MpesaController::class, 'stk'])->withoutMiddleware(['auth'])->name('pay');
+
+
 
 Auth::routes();
 
@@ -60,6 +64,9 @@ Route::group(['prefix' => 'portal', 'middleware' => ['auth']], function () {
     Route::post('/match/dislike/{id}', [MatchController::class, 'dislike'])->name('match.dislike');
 
     // mpesa
-    Route::post('/mpesa/stkpush', [MpesaController::class, 'stkPush'])->name('mpesa.stkpush');Route::post('/mpesa/callback', [MpesaController::class, 'mpesaCallback'])->name('mpesa.callback');
-    
+    // Route::post('/mpesa/stkpush', [MpesaController::class, 'stkPush'])->name('mpesa.stkpush');Route::post('/mpesa/callback', [MpesaController::class, 'mpesaCallback'])->name('mpesa.callback');
+
+    // New Mpesa
+
+    // Route::get('/pages/subscribe', [MpesaController::class, 'stk']);
 });

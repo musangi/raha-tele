@@ -62,6 +62,8 @@ class MessageController extends Controller
         $message->receiver_id = $userId;
         $message->message = $request->message;
         $message->save();
+        // Broadcast the message to Pusher
+        broadcast(new MessageSent($message))->toOthers();
 
         return redirect()->route('messages.show', ['userId' => $userId]); // Ensure route is correct
     }

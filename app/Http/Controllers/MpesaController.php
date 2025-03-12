@@ -6,134 +6,115 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\Subscription;
 use Carbon\Carbon;
-use Safaricom\Mpesa\Mpesa;
+use Mpesa;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 
 class MpesaController extends Controller
 {
-    private $consumerKey;
-    private $consumerSecret;
-    private $shortCode;
-    private $passkey;
-    private $callbackUrl;
-
-    public function __construct()
+    public function stk(Request $request)
     {
-        $this->consumerKey = env('MPESA_CONSUMER_KEY');
-        $this->consumerSecret = env('MPESA_CONSUMER_SECRET');
-        $this->shortCode = env('MPESA_SHORTCODE');
-        $this->passkey = env('MPESA_PASSKEY');
-        $this->callbackUrl = route('mpesa.callback');
-    }
+        $mpesaEnv = env('MPESA_ENV'); // Get environment from .env
+        $shortcode = env('MPESA_SHORTCODE'); // Your paybill or till number
+        $passkey = env('MPESA_PASSKEY'); // Your M-Pesa passkey
+        $consumerKey = env('MPESA_CONSUMER_KEY');
+        $consumerSecret = env('MPESA_CONSUMER_SECRET');
 
-    public function stkPush(Request $request)
-    {
-        // dd($request->all());
-        $phone = $request->phone;
-        $amount = $request->amount;
-        $planId = $request->plan_id;
+        // Base URL for API
+        $baseUrl = $mpesaEnv == 'sandbox' 
+                    ? 'https://sandbox.safaricom.co.ke' 
+                    : 'https://api.safaricom.co.ke';
 
-        // Ensure phone number format is correct
-        if (!preg_match('/^(2547|07|7)\d{8}$/', $phone)) {
-            return back()->withErrors(['phone' => 'Invalid phone number format']);
-        }
-        
-        // Convert phone to international format
-        if (substr($phone, 0, 1) == "0") {
-            $phone = "254" . substr($phone, 1);
-        } elseif (substr($phone, 0, 2) == "7") {
-            $phone = "254" . $phone;
-        }
+        // STK Push URL
+        $stkPushUrl = $baseUrl . '/mpesa/stkpush/v1/processrequest';
 
-        // Get Access Token
-        $accessToken = $this->getAccessToken();
+        // Get M-Pesa access token
+        $accessToken = $this->getMpesaAccessToken($consumerKey, $consumerSecret);
         if (!$accessToken) {
-            return back()->withErrors(['mpesa' => 'Failed to generate M-Pesa Access Token']);
+            \Log::error('Failed to get M-Pesa access token.');
+            return response()->json(['error' => 'Failed to get access token'], 500);
         }
 
-        // Generate Timestamp and Password
+        // Generate timestamp and password
         $timestamp = date('YmdHis');
-        $password = base64_encode($this->shortCode . $this->passkey . $timestamp);
+        $password = base64_encode($shortcode . $passkey . $timestamp);
 
-        // STK Push Request
-        $response = Http::withToken($accessToken)->post('https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest', [
-            "BusinessShortCode" => $this->shortCode,
+        $phone = $request->input('phone'); // User's phone number
+        $amount = (int) $request->input('amount'); // Ensure it's a valid number
+
+        // Prepare request payload
+        $payload = [
+            "BusinessShortCode" => $shortcode,
             "Password" => $password,
             "Timestamp" => $timestamp,
             "TransactionType" => "CustomerPayBillOnline",
             "Amount" => $amount,
             "PartyA" => $phone,
-            "PartyB" => $this->shortCode,
+            "PartyB" => $shortcode,
             "PhoneNumber" => $phone,
-            "CallBackURL" => $this->callbackUrl,
-            "AccountReference" => "RahaTele Subscription",
-            "TransactionDesc" => "Payment for Subscription Plan"
+            "CallBackURL" => env('MPESA_CALLBACK_URL'),
+            "AccountReference" => "Subscription",
+            "TransactionDesc" => "Payment for Subscription"
+        ];
+
+        // Create Guzzle client with SSL verification disabled
+        $client = new Client([
+            'verify' => false, // Disable SSL certificate verification
         ]);
 
-        // Check response
-        $result = $response->json();
+        try {
+            // Send request using Guzzle
+            $response = $client->post($stkPushUrl, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $accessToken,
+                    'Content-Type'  => 'application/json'
+                ],
+                'json' => $payload
+            ]);
 
-        if (isset($result['ResponseCode']) && $result['ResponseCode'] == "0") {
-            return back()->with('success', 'STK Push sent. Check your phone to complete the transaction.');
-        } else {
-            return back()->withErrors(['mpesa' => 'Failed to initiate STK Push: ' . json_encode($result)]);
-        }
-    }
+            // Decode response
+            $responseData = json_decode($response->getBody(), true);
 
-    private function getAccessToken()
-    {
-        dd(env('MPESA_CONSUMER_KEY'), env('MPESA_CONSUMER_SECRET'));
+            \Log::info('STK Push Response:', $responseData);
 
-        $response = Http::withBasicAuth($this->consumerKey, $this->consumerSecret)
-            ->withOptions(["verify" => false]) // Disable SSL verification (if needed)
-            ->get('https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials');
-    
-        if ($response->successful()) {
-            return $response->json()['access_token'];
-        } else {
-            \Log::error("M-Pesa Authentication Failed: " . $response->body());
-            return null;
+            return response()->json([
+                'message' => 'STK push initiated',
+                'response' => $responseData
+            ]);
+
+        } catch (RequestException $e) {
+            \Log::error('STK Push Error: ' . $e->getMessage());
+            if ($e->hasResponse()) {
+                \Log::error('STK Push Response: ' . $e->getResponse()->getBody()->getContents());
+                \Log::info('STK Push Payload:', $payload);
+
+            }
+            return response()->json(['error' => 'STK push request failed'], 500);
         }
         
     }
-    
 
-
-    public function mpesaCallback(Request $request)
+    private function getMpesaAccessToken($consumerKey, $consumerSecret)
     {
-        $response = $request->all();
+        $baseUrl = env('MPESA_ENV') == 'sandbox' 
+                    ? 'https://sandbox.safaricom.co.ke' 
+                    : 'https://api.safaricom.co.ke';
 
-        if (isset($response['Body']['stkCallback']['ResultCode']) && $response['Body']['stkCallback']['ResultCode'] == 0) {
-            $callbackMetadata = $response['Body']['stkCallback']['CallbackMetadata']['Item'];
+        $url = $baseUrl . "/oauth/v1/generate?grant_type=client_credentials";
 
-            // Extract transaction details
-            $mpesaReceipt = collect($callbackMetadata)->where('Name', 'MpesaReceiptNumber')->first()['Value'];
-            $amount = collect($callbackMetadata)->where('Name', 'Amount')->first()['Value'];
-            $phone = collect($callbackMetadata)->where('Name', 'PhoneNumber')->first()['Value'];
+        // Disable SSL verification (only for testing in sandbox)
+        $response = Http::withBasicAuth($consumerKey, $consumerSecret)
+                        ->withOptions(['verify' => false]) // <-- Disable SSL verification
+                        ->get($url);
 
-            // Find user by phone number
-            $user = \App\Models\User::where('phone', $phone)->first();
-            if (!$user) {
-                return response()->json(['error' => 'User not found'], 404);
-            }
-
-            // Find the corresponding plan
-            $plan = \App\Models\SubscriptionPlan::where('amount', $amount)->first();
-            if (!$plan) {
-                return response()->json(['error' => 'Subscription plan not found'], 404);
-            }
-
-            // Create subscription record
-            Subscription::create([
-                'user_id' => $user->id,
-                'subscription_plan_id' => $plan->id,
-                'start_date' => now(),
-                'end_date' => Carbon::now()->addDays(30),
-                'amount' => $amount,
-            ]);
-
-            return response()->json(['success' => 'Subscription activated successfully']);
+        if ($response->successful()) {
+            return $response->json()['access_token'];
         }
 
-        return response()->json(['error' => 'Payment failed'], 400);
+        \Log::error('Failed to fetch M-Pesa access token: ' . $response->body());
+        return null;
     }
+
+
+    
 }
