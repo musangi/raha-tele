@@ -12,16 +12,23 @@
         @foreach($matches as $match)
             <a href="{{ route('messages.show', $match->id) }}" 
                class="d-flex align-items-center p-2 list-group-item list-group-item-action border-0">
-                <img src="{{ $match->profile_picture ? asset('storage/' . $match->profile_picture) : asset('assets/images/profiles/default-avatar.png') }}" class="rounded-circle mr-3" 
-                     style="width: 50px; height: 50px; object-fit: cover;">
+                <img src="{{ $match->profile_picture ? asset('storage/' . $match->profile_picture) : asset('assets/images/profiles/default-avatar.png') }}" 
+                     class="rounded-circle mr-3" style="width: 50px; height: 50px; object-fit: cover;">
                      
                 <div class="flex-grow-1">
                     <p class="mb-1 font-weight-bold text-dark">{{ $match->name }}</p>
-                    @if($match->last_message)
-                        <p class="text-muted small mb-0">{{ Str::limit($match->last_message->message, 20) }}</p>
+                    @php
+                    // $lastMessage = $match->lastMessageWith(auth()->id());
+                    $lastMessage = $match->lastMessage->message ?? 'No messages yet';
+
+                    @endphp
+
+                    @if($match->lastMessage)
+                    <p class="text-muted small mb-0">{{ Str::limit($match->lastMessage->message, 20) }}</p>
                     @else
-                        <p class="text-muted small mb-0">No messages yet</p>
+                    <p class="text-muted small mb-0">No messages yet</p>
                     @endif
+
                 </div>
             </a>
         @endforeach
@@ -68,12 +75,90 @@
         </div>
     </div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pusher/7.0.2/pusher.min.js"></script>
+
 
 <script>
-    // Auto-scroll to the bottom of messages
+    document.addEventListener("DOMContentLoaded", function () {
     var messageContainer = document.getElementById("message-container");
-    if (messageContainer) {
-        messageContainer.scrollTop = messageContainer.scrollHeight;
+
+    // Auto-scroll to the bottom of messages
+    function scrollToBottom() {
+        if (messageContainer) {
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+        }
     }
+    scrollToBottom();
+
+    // Initialize Pusher
+    Pusher.logToConsole = false;
+    var pusher = new Pusher("{{ env('PUSHER_APP_KEY') }}", {
+        cluster: "{{ env('PUSHER_APP_CLUSTER') }}",
+        encrypted: true
+    });
+
+    var userId = "{{ auth()->id() }}";
+    var channel = pusher.subscribe("private-chat-channel-" + userId);
+
+    channel.bind("message.sent", function (data) {
+        console.log("New message received:", data);
+
+        if (!messageContainer) return;
+
+        var isMine = data.message.sender_id == userId;
+        var alignment = isMine ? "justify-content-end" : "justify-content-start";
+        var bgColor = isMine ? "bg-primary text-white" : "bg-white";
+
+        // Create message element
+        var messageDiv = document.createElement("div");
+        messageDiv.className = `d-flex ${alignment} mb-2`;
+
+        var messageContent = document.createElement("div");
+        messageContent.className = `p-3 rounded-lg shadow-sm ${bgColor}`;
+        messageContent.style.maxWidth = "70%";
+
+        var messageText = document.createElement("p");
+        messageText.className = "mb-1";
+        messageText.textContent = data.message.message;
+
+        var timeStamp = document.createElement("small");
+        timeStamp.className = "d-block text-right text-muted";
+        timeStamp.textContent = new Date(data.message.created_at).toLocaleTimeString();
+
+        messageContent.appendChild(messageText);
+        messageContent.appendChild(timeStamp);
+        messageDiv.appendChild(messageContent);
+        messageContainer.appendChild(messageDiv);
+
+        // Auto-scroll to the latest message
+        scrollToBottom();
+
+        // Update match list last message preview
+        var matchElement = document.querySelector(`a[href="{{ route('messages.show', '') }}/${data.message.sender_id}"] p.text-muted`);
+        if (matchElement) {
+            matchElement.textContent = data.message.message.length > 20
+                ? data.message.message.substring(0, 20) + "..."
+                : data.message.message;
+        }
+
+        // Show browser notification
+        if (Notification.permission === "granted") {
+            new Notification("New Message from " + data.sender_name, {
+                body: data.message.message,
+                icon: data.sender_avatar
+            });
+        } else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    new Notification("New Message from " + data.sender_name, {
+                        body: data.message.message,
+                        icon: data.sender_avatar
+                    });
+                }
+            });
+        }
+    });
+});
+
 </script>
 @endsection

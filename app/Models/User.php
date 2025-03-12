@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Message;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -111,4 +112,23 @@ class User extends Authenticatable
     {
         return now()->diffInYears($this->date_of_birth); // Ensure date_of_birth is defined, or remove this accessor
     }
+    
+    public function lastMessageWith($authUserId)
+{
+    return Message::where(function ($query) use ($authUserId) {
+        $query->where('sender_id', $this->id)
+            ->where('receiver_id', $authUserId);
+    })
+    ->orWhere(function ($query) use ($authUserId) {
+        $query->where('sender_id', $authUserId)
+            ->where('receiver_id', $this->id);
+    })
+    ->latest()
+    ->first();
+}
+
+    
+
+
+
 }

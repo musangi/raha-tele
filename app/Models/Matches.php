@@ -20,4 +20,10 @@ class Matches extends Model
     {
         return $this->belongsTo(User::class, 'matched_user_id');
     }
+
+    public function lastMessage()
+    {
+        return $this->hasOne(Message::class, 'conversation_id', 'id')->latest();
+    }
+
 }
