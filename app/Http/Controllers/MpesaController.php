@@ -19,6 +19,9 @@ class MpesaController extends Controller
         $passkey = env('MPESA_PASSKEY'); // Your M-Pesa passkey
         $consumerKey = env('MPESA_CONSUMER_KEY');
         $consumerSecret = env('MPESA_CONSUMER_SECRET');
+        // $consumerKey = config('mpesa.consumer_key');
+        // $consumerSecret = config('mpesa.consumer_secret');
+
 
         // Base URL for API
         $baseUrl = $mpesaEnv == 'sandbox' 
@@ -93,28 +96,42 @@ class MpesaController extends Controller
         }
         
     }
-
     private function getMpesaAccessToken($consumerKey, $consumerSecret)
-    {
-        $baseUrl = env('MPESA_ENV') == 'sandbox' 
-                    ? 'https://sandbox.safaricom.co.ke' 
-                    : 'https://api.safaricom.co.ke';
+{
+    // dd(env('MPESA_CONSUMER_KEY'), env('MPESA_CONSUMER_SECRET')); // Debug Here
 
-        $url = $baseUrl . "/oauth/v1/generate?grant_type=client_credentials";
+    $baseUrl = env('MPESA_ENV') == 'sandbox' 
+                ? 'https://sandbox.safaricom.co.ke' 
+                : 'https://api.safaricom.co.ke';
 
-        // Disable SSL verification (only for testing in sandbox)
-        $response = Http::withBasicAuth($consumerKey, $consumerSecret)
-                        ->withOptions(['verify' => false]) // <-- Disable SSL verification
-                        ->get($url);
+    $url = $baseUrl . "/oauth/v1/generate?grant_type=client_credentials";
 
-        if ($response->successful()) {
-            return $response->json()['access_token'];
+    \Log::info("Requesting access token from: $url");
+
+    try {
+        $client = new \GuzzleHttp\Client(['verify' => false]);
+
+        $response = $client->request('GET', $url, [
+            'auth' => [$consumerKey, $consumerSecret],
+            'headers' => ['Accept' => 'application/json']
+        ]);
+
+        $responseBody = json_decode($response->getBody(), true);
+
+        \Log::info("M-Pesa Response: " . json_encode($responseBody));
+
+        return $responseBody['access_token'] ?? null;
+
+    } catch (\GuzzleHttp\Exception\RequestException $e) {
+        \Log::error("M-Pesa Token Request Exception: " . $e->getMessage());
+
+        if ($e->hasResponse()) {
+            \Log::error("M-Pesa Error Response: " . $e->getResponse()->getBody()->getContents());
         }
 
-        \Log::error('Failed to fetch M-Pesa access token: ' . $response->body());
         return null;
     }
-
+}
 
     
 }
